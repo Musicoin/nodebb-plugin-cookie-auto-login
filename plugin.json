@@ -1,0 +1,10 @@
+{
+	"id": "nodebb-plugin-cookie-auto-login",
+	"name": "NodeBB Cookie Auto Login",
+	"description": "Logs in automatically",
+	"url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login",
+	"library": "./library.js",
+	"hooks": [
+		{ "hook": "static:app.load", "method": "load" }
+	]
+}

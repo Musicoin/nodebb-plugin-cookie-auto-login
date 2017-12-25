@@ -1,0 +1,41 @@
+{
+  "name": "nodebb-plugin-cookie-auto-login",
+  "version": "0.3.6",
+  "description": "NodeBB Cookie based auto login",
+  "main": "library.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login"
+  },
+  "keywords": [
+    "nodebb",
+    "plugin",
+    "oauth",
+    "oauth2",
+    "sso",
+    "single sign on",
+    "login",
+    "registration"
+  ],
+  "author": {
+    "name": "Tamil Vendhan",
+    "email": "tamilvendhan.k@yahoo.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login/issues"
+  },
+  "readme": "",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "passport-cookie": "^1.0.4",
+    "passport-oauth": "~1.0.0",
+    "pino": "^4.10.2",
+    "request": "^2.83.0",
+    "superagent": "^3.8.2"
+  },
+  "nbbpm": {
+    "compatibility": "^1.0.1",
+    "index": false
+  }
+}
