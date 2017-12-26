@@ -11,8 +11,9 @@ const nconf = module.parent.require('nconf');
 const winston = module.parent.require('winston');
 const async = module.parent.require('async');
 const authenticationController = module.parent.require('./controllers/authentication');
+const groups = module.parent.require('../src/groups');
 
-exports.load = function(params, callback) {
+exports.load = function (params, callback) {
   let router = params.router;
 
   function autoLogin(req, res, next) {
@@ -21,15 +22,19 @@ exports.load = function(params, callback) {
       return next();
     }
 
-    getUserUid(req.headers, function(error, uid) {
+    getUserUid(req.headers, function (error, uid) {
 
       if (error) {
         // req.session.returnTo = 'https://staging.musicoin.org';
         return next();
       }
 
+      //this will cover some errors
+      if (!req.session) {
+        req.session = {};
+      }
+      req.session.returnTo = 'https://forum-staging.musicoin.org/';
       authenticationController.doLogin(req, uid, next);
-
     });
 
   }
@@ -42,18 +47,10 @@ exports.load = function(params, callback) {
 function doGetUserFromRemote(headers, callback) {
 
   pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, type: 'start' });
-  
-  const options = {
-    hostname: 'staging.musicoin.org',
-    port: 80,
-    path: '/current-user-test',
-    method: 'GET',
-    headers: headers,
-    rejectUnauthorized: false
-  };
-  request.get('https://staging.musicoin.org/current-user').set('Cookie', headers.cookie).end((error, res) => {
+
+  request.get('https://staging.musicoin.org/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
     try {
-      var result = formatRemoteResponse(JSON.parse(res.text));
+      var result = JSON.parse(res.text);
       callback(null, result);
       pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, output: result, type: 'end' });
     } catch (e) {
@@ -61,27 +58,6 @@ function doGetUserFromRemote(headers, callback) {
       callback(error, null);
     }
   });
-
-}
-
-function formatRemoteResponse(data) {
-
-  let result = {
-    name: '',
-    email: ''
-  };
-
-  if (data.google) {
-    result.email = data.google.email;
-    result.name = data.google.name;
-  } else if (data.twitter) {
-    result.email = data.twitter.username;
-    result.name = data.twitter.displayName;
-  }
-
-  //TODO: Return correct result for other social network providers.
-
-  return result;
 
 }
 
@@ -119,7 +95,7 @@ function doCreateUser(data, callback) {
     }
 
     pino.info({ method: 'doCreateUser', input: data, output: result, type: 'end' });
-    callback(null, result);
+    callback(null, data.username, result);
 
   });
 }
@@ -130,20 +106,27 @@ function doFindOrCreateUser(user, callback) {
 
   async.waterfall([function findUser(done) {
 
-    User.getUidByEmail(user.email, (error, uid) => done(error, uid ? uid : null));
+    User.getUidByUsername(user.username, (error, uid) => done(error, uid ? uid : null));
 
   }, function tryCreateUser(uid, done) {
 
     if (!uid) {
       return doCreateUser({
-        username: user.name,
-        email: user.email
+        fullname: user.fullname,
+        username: user.username
       }, done);
     }
-    
     return done(null, uid);
 
-  }], (error, uid) => {
+  }, function tryJoinGroupIfUserAdmin(uid, callback) {
+    if (isAdmin(user.username)) {
+      groups.join('administrators', uid, function (err) {
+        return callback(err, uid)
+      });
+    }
+    callback(null, uid);
+  }
+  ], (error, uid) => {
 
     if (error) {
       pino.error({ method: 'doFindOrCreateUser', input: user, error: error, type: 'end' });
@@ -155,4 +138,7 @@ function doFindOrCreateUser(user, callback) {
 
   });
 
+}
+function isAdmin(username) {
+  return (username && username.endsWith("@musicoin.org"));
 }
