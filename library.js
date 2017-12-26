@@ -53,6 +53,7 @@ function doGetUserFromRemote(headers, callback) {
       var result = JSON.parse(res.text);
       callback(null, result);
       pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, output: result, type: 'end' });
+      return;
     } catch (e) {
       pino.error({ method: 'doGetUserFromRemote', input: headers.cookie, error: e, type: 'end' });
       callback(error, null);
