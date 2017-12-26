@@ -13,7 +13,7 @@ const async = module.parent.require('async');
 const authenticationController = module.parent.require('./controllers/authentication');
 const groups = module.parent.require('../src/groups');
 
-exports.load = function (params, callback) {
+exports.load = function(params, callback) {
   let router = params.router;
 
   function autoLogin(req, res, next) {
@@ -22,7 +22,7 @@ exports.load = function (params, callback) {
       return next();
     }
 
-    getUserUid(req.headers, function (error, uid) {
+    getUserUid(req.headers, function(error, uid) {
 
       if (error) {
         // req.session.returnTo = 'https://staging.musicoin.org';
@@ -49,15 +49,17 @@ function doGetUserFromRemote(headers, callback) {
   pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, type: 'start' });
 
   request.get('https://staging.musicoin.org/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
-    try {
-      var result = JSON.parse(res.text);
-      callback(null, result);
-      pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, output: result, type: 'end' });
-      return;
-    } catch (e) {
-      pino.error({ method: 'doGetUserFromRemote', input: headers.cookie, error: e, type: 'end' });
-      callback(error, null);
+
+    if (error) {
+      let result = JSON.parse(res.text);
+      pino.error({ method: 'doGetUserFromRemote', input: headers.cookie, error: result, type: 'end' });
+      return callback(result);
     }
+
+    let result = JSON.parse(res.text);
+    pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, output: result, type: 'end' });
+    callback(null, result);
+
   });
 
 }
@@ -121,13 +123,12 @@ function doFindOrCreateUser(user, callback) {
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.username)) {
-      groups.join('administrators', uid, function (err) {
+      groups.join('administrators', uid, function(err) {
         return callback(err, uid)
       });
     }
     callback(null, uid);
-  }
-  ], (error, uid) => {
+  }], (error, uid) => {
 
     if (error) {
       pino.error({ method: 'doFindOrCreateUser', input: user, error: error, type: 'end' });
@@ -140,6 +141,7 @@ function doFindOrCreateUser(user, callback) {
   });
 
 }
+
 function isAdmin(username) {
   return (username && username.endsWith("@musicoin.org"));
 }
