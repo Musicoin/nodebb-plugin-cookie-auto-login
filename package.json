@@ -1,11 +1,11 @@
 {
   "name": "nodebb-plugin-cookie-auto-login",
-  "version": "0.4.0",
+  "version": "0.1.0",
   "description": "NodeBB Cookie based auto login",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login"
+    "url": "https://github.com/Musicoin/nodebb-plugin-cookie-auto-login"
   },
   "keywords": [
     "nodebb",
@@ -17,13 +17,9 @@
     "login",
     "registration"
   ],
-  "author": {
-    "name": "Tamil Vendhan",
-    "email": "tamilvendhan.k@yahoo.com"
-  },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login/issues"
+    "url": "https://github.com/Musicoin/nodebb-plugin-cookie-auto-login/issues"
   },
   "readme": "",
   "readmeFilename": "README.md",

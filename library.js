@@ -33,8 +33,17 @@ exports.load = function(params, callback) {
       if (!req.session) {
         req.session = {};
       }
-      req.session.returnTo = 'https://forum-staging.musicoin.org/';
-      authenticationController.doLogin(req, uid, next);
+      
+      authenticationController.doLogin(req, uid, (error) => {
+
+        if(error) {
+          return next(error);
+        }
+
+        res.redirect('/'); // Redirect first time to refresh session. 
+
+      });
+      
     });
 
   }
@@ -77,7 +86,7 @@ function getUserUid(headers, callback) {
     doFindOrCreateUser(user, done);
   }], (error, uid) => {
     if (error) {
-      pino.error({ method: 'getUserUid', input: headers.cookie, error: error, type: 'end' });
+      pino.error({ method: 'getUserUid', input: headers.cookie, error: error.toString(), type: 'end' });
       return callback(error);
     }
     pino.info({ method: 'getUserUid', input: headers.cookie, output: uid, type: 'end' });
@@ -93,12 +102,12 @@ function doCreateUser(data, callback) {
   return User.create(data, (error, result) => {
 
     if (error) {
-      pino.error({ method: 'doCreateUser', input: data, error: error, type: 'end' });
+      pino.error({ method: 'doCreateUser', input: data, error: error.toString(), type: 'end' });
       return callback(error);
     }
 
     pino.info({ method: 'doCreateUser', input: data, output: result, type: 'end' });
-    callback(null, data.username, result);
+    callback(null, result);
 
   });
 }
@@ -109,29 +118,30 @@ function doFindOrCreateUser(user, callback) {
 
   async.waterfall([function findUser(done) {
 
-    User.getUidByUsername(user.username, (error, uid) => done(error, uid ? uid : null));
+    User.getUidByEmail(user.username, (error, uid) => done(error, uid ? uid : null));
 
   }, function tryCreateUser(uid, done) {
 
     if (!uid) {
       return doCreateUser({
         fullname: user.fullname,
-        username: user.username
+        email: user.username,
+        username: user.fullname
       }, done);
     }
     return done(null, uid);
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.username)) {
-      groups.join('administrators', uid, function(err) {
-        return callback(err, uid)
+     return groups.join('administrators', uid, function(err) {
+        callback(err, uid)
       });
     }
     callback(null, uid);
   }], (error, uid) => {
 
     if (error) {
-      pino.error({ method: 'doFindOrCreateUser', input: user, error: error, type: 'end' });
+      pino.error({ method: 'doFindOrCreateUser', input: user, error: error.toString(), type: 'end' });
       return callback(error);
     }
 
