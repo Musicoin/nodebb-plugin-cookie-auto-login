@@ -16,7 +16,7 @@ const groups = module.parent.require('../src/groups');
 exports.extendConfig = function extendConfig(config, callback) {
 
   pino.info({ method: 'extendConfig', input: config, type: 'start' });
-  
+
   config.appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://musicoin.org';
   config.forumURL = process.env.NODE_ENV === 'development' ? 'https://forum-staging.musicoin.org' : 'https://forum.musicoin.org';
 
@@ -31,14 +31,22 @@ exports.load = function(params, callback) {
 
   function autoLogin(req, res, next) {
 
-    if (req.uid) {
-      return next();
-    }
-
     getUserUid(req.headers, function(error, uid) {
 
+      // error meaning, session not found
       if (error) {
-        // req.session.returnTo = 'https://staging.musicoin.org';
+        //req.uid exists meaning, musicoin session is invalidated and forum session not
+        if (req.uid) {
+          // invalidate forum session too
+          req.logout();
+          // return res.redirect('/');
+        }
+        return next();
+      }
+
+      // if musicoin session found & forum session also found
+      if (req.uid) {
+        // skip logging again
         return next();
       }
 
@@ -46,10 +54,10 @@ exports.load = function(params, callback) {
       if (!req.session) {
         req.session = {};
       }
-      
+
       authenticationController.doLogin(req, uid, (error) => {
 
-        if(error) {
+        if (error) {
           return next(error);
         }
 
@@ -146,7 +154,7 @@ function doFindOrCreateUser(user, callback) {
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.username)) {
-     return groups.join('administrators', uid, function(err) {
+      return groups.join('administrators', uid, function(err) {
         callback(err, uid)
       });
     }
