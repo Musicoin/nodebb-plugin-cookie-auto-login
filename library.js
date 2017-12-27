@@ -13,6 +13,18 @@ const async = module.parent.require('async');
 const authenticationController = module.parent.require('./controllers/authentication');
 const groups = module.parent.require('../src/groups');
 
+exports.extendConfig = function extendConfig(config, callback) {
+
+  pino.info({ method: 'extendConfig', input: config, type: 'start' });
+  
+  config.appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://musicoin.org';
+
+  pino.info({ method: 'extendConfig', output: config, type: 'end' });
+
+  return callback(null, config);
+
+};
+
 exports.load = function(params, callback) {
   let router = params.router;
 
@@ -43,7 +55,7 @@ exports.load = function(params, callback) {
         res.redirect('/'); // Redirect first time to refresh session. 
 
       });
-      
+
     });
 
   }

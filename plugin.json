@@ -5,6 +5,7 @@
 	"url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login",
 	"library": "./library.js",
 	"hooks": [
-		{ "hook": "static:app.load", "method": "load" }
+		{ "hook": "static:app.load", "method": "load" },
+		{ "hook": "filter:config.get", "method": "extendConfig"}
 	]
 }
