@@ -18,6 +18,7 @@ exports.extendConfig = function extendConfig(config, callback) {
   pino.info({ method: 'extendConfig', input: config, type: 'start' });
   
   config.appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://musicoin.org';
+  config.forumURL = process.env.NODE_ENV === 'development' ? 'https://forum-staging.musicoin.org' : 'https://forum.musicoin.org';
 
   pino.info({ method: 'extendConfig', output: config, type: 'end' });
 
