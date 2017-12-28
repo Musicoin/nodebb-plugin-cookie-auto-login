@@ -13,7 +13,18 @@
       "method": "extendConfig"
     }
   ],
-  "scripts": [
+  "staticDirs": {
+		"static": "./static"
+	},
+	"less": [
+		"static/style.less"
+	],
+	"scripts": [
     "public/src/musicoin-forum.js"
-  ]
+  ],
+	"acpScripts": [
+    "static/lib/email_not_found.js",
+    "static/lib/email_not_found_staging.js"
+	],
+	"templates": "static/templates"
 }
