@@ -31,6 +31,10 @@ exports.load = function (params, callback) {
 
   function autoLogin(req, res, next) {
 
+    if(req.baseUrl === '/' && req.path === '/email_not_found') {
+      return next();
+    }
+
     getUserUid(req.headers, function (error, uid) {
 
       // error meaning, session not found
