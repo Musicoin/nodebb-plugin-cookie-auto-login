@@ -26,22 +26,27 @@ exports.extendConfig = function extendConfig(config, callback) {
 
 };
 
-exports.load = function(params, callback) {
+exports.load = function (params, callback) {
   let router = params.router;
 
   function autoLogin(req, res, next) {
 
-    getUserUid(req.headers, function(error, uid) {
+    getUserUid(req.headers, function (error, uid) {
 
       // error meaning, session not found
       if (error) {
-        //req.uid exists meaning, musicoin session is invalidated and forum session not
-        if (req.uid) {
-          // invalidate forum session too
-          req.logout();
-          // return res.redirect('/');
+        if (err.message === 'INVALID_EMAIL') {
+          return res.redirect('/email_not_found');
         }
-        return next();
+        else {
+          //req.uid exists meaning, musicoin session is invalidated and forum session not
+          if (req.uid) {
+            // invalidate forum session too
+            req.logout();
+            // return res.redirect('/');
+          }
+          return next();
+        }
       }
 
       // if musicoin session found & forum session also found
@@ -71,6 +76,9 @@ exports.load = function(params, callback) {
 
   router.use(autoLogin);
 
+  router.get('/email_not_found', function (req, res) {
+    res.render('email_not_found');
+  });
   callback();
 }
 
@@ -137,6 +145,11 @@ function doFindOrCreateUser(user, callback) {
 
   pino.info({ method: 'doFindOrCreateUser', input: user, type: 'start' });
 
+  if (!user.email || (user.email && user.email.lenght < 5)) {
+    return callback(new Error("INVALID_EMAIL"), null);
+  }
+
+
   async.waterfall([function findUser(done) {
 
     User.getUidByEmail(user.username, (error, uid) => done(error, uid ? uid : null));
@@ -154,7 +167,7 @@ function doFindOrCreateUser(user, callback) {
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.username)) {
-      return groups.join('administrators', uid, function(err) {
+      return groups.join('administrators', uid, function (err) {
         callback(err, uid)
       });
     }

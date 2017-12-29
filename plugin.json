@@ -4,7 +4,8 @@
   "description": "Logs in automatically",
   "url": "https://github.com/livey0u/nodebb-plugin-cookie-auto-login",
   "library": "./library.js",
-  "hooks": [{
+  "hooks": [
+    {
       "hook": "static:app.load",
       "method": "load"
     },
@@ -13,7 +14,14 @@
       "method": "extendConfig"
     }
   ],
+  "staticDirs": {
+    "static": "./static"
+  },
+  "less": [
+    "static/style.less"
+  ],
   "scripts": [
     "public/src/musicoin-forum.js"
-  ]
+  ],
+  "templates": "static/templates"
 }
