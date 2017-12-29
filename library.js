@@ -26,17 +26,17 @@ exports.extendConfig = function extendConfig(config, callback) {
 
 };
 
-exports.load = function(params, callback) {
+exports.load = function (params, callback) {
   let router = params.router;
 
   function autoLogin(req, res, next) {
 
-    getUserUid(req.headers, function(error, uid) {
+    getUserUid(req.headers, function (error, uid) {
 
       // error meaning, session not found
       if (error) {
         if (err.message === 'INVALID_EMAIL') {
-          res.redirect('/email_not_found');
+          return res.redirect('/email_not_found');
         }
         else {
           //req.uid exists meaning, musicoin session is invalidated and forum session not
@@ -77,8 +77,8 @@ exports.load = function(params, callback) {
   router.use(autoLogin);
 
   router.get('/email_not_found', function (req, res) {
-		res.render('email_not_found');
-	});
+    res.render('email_not_found');
+  });
   callback();
 }
 
@@ -167,7 +167,7 @@ function doFindOrCreateUser(user, callback) {
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.username)) {
-      return groups.join('administrators', uid, function(err) {
+      return groups.join('administrators', uid, function (err) {
         callback(err, uid)
       });
     }
