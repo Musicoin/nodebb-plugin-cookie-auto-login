@@ -34,7 +34,7 @@
         $(function(){
              bootbox.alert("Hello username, Looks like you have not provided or verified your email. Email address is necessary to register in our forum. Please follow the below link to update or verify your email address.", 
              function() {
-                window.location.href = "http://musicoin.org/nav/profile";
+                window.location.href =  "{config.appURL}/nav/profile";
             });
         });
     </script>

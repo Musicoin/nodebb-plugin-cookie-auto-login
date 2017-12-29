@@ -12,7 +12,6 @@ const winston = module.parent.require('winston');
 const async = module.parent.require('async');
 const authenticationController = module.parent.require('./controllers/authentication');
 const groups = module.parent.require('../src/groups');
-const redirectUrlEmailValidation = process.env.NODE_ENV === 'development' ? '/email_not_found_staging' : '/email_not_found';
 
 exports.extendConfig = function extendConfig(config, callback) {
 
@@ -36,8 +35,8 @@ exports.load = function(params, callback) {
 
       // error meaning, session not found
       if (error) {
-        if (err.message === 'ERROR-EMAIL') {
-          res.redirect(redirectUrlEmailValidation);
+        if (err.message === 'INVALID_EMAIL') {
+          res.redirect('/email_not_found');
         }
         else {
           //req.uid exists meaning, musicoin session is invalidated and forum session not
@@ -77,9 +76,6 @@ exports.load = function(params, callback) {
 
   router.use(autoLogin);
 
-  router.get('/email_not_found_staging', function (req, res) {
-		res.render('email_not_found_staging');
-  });
   router.get('/email_not_found', function (req, res) {
 		res.render('email_not_found');
 	});
@@ -150,7 +146,7 @@ function doFindOrCreateUser(user, callback) {
   pino.info({ method: 'doFindOrCreateUser', input: user, type: 'start' });
 
   if (!user.email || (user.email && user.email.lenght < 5)) {
-    return callback(new Error("ERROR-EMAIL"), null);
+    return callback(new Error("INVALID_EMAIL"), null);
   }
 
 
