@@ -145,28 +145,29 @@ function doFindOrCreateUser(user, callback) {
 
   pino.info({ method: 'doFindOrCreateUser', input: user, type: 'start' });
 
-  if (!user.email || (user.email && user.email.lenght < 5)) {
+  
+  if (!user.primaryEmail ) {
     return callback(new Error("INVALID_EMAIL"), null);
   }
 
 
   async.waterfall([function findUser(done) {
 
-    User.getUidByEmail(user.username, (error, uid) => done(error, uid ? uid : null));
+    User.getUidByEmail(user.primaryEmail, (error, uid) => done(error, uid ? uid : null));
 
   }, function tryCreateUser(uid, done) {
 
     if (!uid) {
       return doCreateUser({
         fullname: user.fullname,
-        email: user.username,
-        username: user.fullname
+        email: user.primaryEmail,
+        username: user.username
       }, done);
     }
     return done(null, uid);
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
-    if (isAdmin(user.username)) {
+    if (isAdmin(user.primaryEmail)) {
       return groups.join('administrators', uid, function (err) {
         callback(err, uid)
       });
@@ -186,6 +187,6 @@ function doFindOrCreateUser(user, callback) {
 
 }
 
-function isAdmin(username) {
-  return (username && username.endsWith("@musicoin.org"));
+function isAdmin(email) {
+  return (email && email.endsWith("@musicoin.org"));
 }
