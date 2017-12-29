@@ -167,7 +167,7 @@ function doFindOrCreateUser(user, callback) {
       return doCreateUser({
         fullname: user.fullname,
         email: user.primaryEmail,
-        username: user.username
+        username: user.fullname
       }, done);
     }
     return done(null, uid);
