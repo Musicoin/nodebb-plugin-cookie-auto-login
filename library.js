@@ -13,12 +13,15 @@ const async = module.parent.require('async');
 const authenticationController = module.parent.require('./controllers/authentication');
 const groups = module.parent.require('../src/groups');
 
+const appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://musicoin.org';
+const forumURL = process.env.NODE_ENV === 'development' ? 'https://forum-staging.musicoin.org' : 'https://forum.musicoin.org';
+
 exports.extendConfig = function extendConfig(config, callback) {
 
   pino.info({ method: 'extendConfig', input: config, type: 'start' });
 
-  config.appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://musicoin.org';
-  config.forumURL = process.env.NODE_ENV === 'development' ? 'https://forum-staging.musicoin.org' : 'https://forum.musicoin.org';
+  config.appURL = appURL;
+  config.forumURL = forumURL;
 
   pino.info({ method: 'extendConfig', output: config, type: 'end' });
 
@@ -26,23 +29,22 @@ exports.extendConfig = function extendConfig(config, callback) {
 
 };
 
-exports.load = function (params, callback) {
+exports.load = function(params, callback) {
   let router = params.router;
 
   function autoLogin(req, res, next) {
 
-    if(req.baseUrl === '/' && req.path === '/email_not_found') {
+    if (!req.baseUrl req.path === '/email_not_found') {
       return next();
     }
 
-    getUserUid(req.headers, function (error, uid) {
+    getUserUid(req.headers, function(error, uid) {
 
       // error meaning, session not found
       if (error) {
         if (error.message === 'INVALID_EMAIL') {
           return res.redirect('/email_not_found');
-        }
-        else {
+        } else {
           //req.uid exists meaning, musicoin session is invalidated and forum session not
           if (req.uid) {
             // invalidate forum session too
@@ -80,8 +82,8 @@ exports.load = function (params, callback) {
 
   router.use(autoLogin);
 
-  router.get('/email_not_found', function (req, res) {
-    res.render('email_not_found');
+  router.get('/email_not_found', function(req, res) {
+    res.render('email_not_found', { appURL: appURL});
   });
   callback();
 }
@@ -149,8 +151,8 @@ function doFindOrCreateUser(user, callback) {
 
   pino.info({ method: 'doFindOrCreateUser', input: user, type: 'start' });
 
-  
-  if (!user.primaryEmail ) {
+
+  if (!user.primaryEmail) {
     return callback(new Error("INVALID_EMAIL"), null);
   }
 
@@ -172,7 +174,7 @@ function doFindOrCreateUser(user, callback) {
 
   }, function tryJoinGroupIfUserAdmin(uid, callback) {
     if (isAdmin(user.primaryEmail)) {
-      return groups.join('administrators', uid, function (err) {
+      return groups.join('administrators', uid, function(err) {
         callback(err, uid)
       });
     }
