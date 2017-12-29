@@ -34,7 +34,7 @@ exports.load = function(params, callback) {
 
   function autoLogin(req, res, next) {
 
-    if (!req.baseUrl req.path === '/email_not_found') {
+    if (!req.baseUrl && req.path === '/email_not_found') {
       return next();
     }
 
