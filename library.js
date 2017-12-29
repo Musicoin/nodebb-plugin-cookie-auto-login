@@ -35,7 +35,7 @@ exports.load = function (params, callback) {
 
       // error meaning, session not found
       if (error) {
-        if (err.message === 'INVALID_EMAIL') {
+        if (error.message === 'INVALID_EMAIL') {
           return res.redirect('/email_not_found');
         }
         else {
