@@ -145,6 +145,7 @@ function doFindOrCreateUser(user, callback) {
 
   pino.info({ method: 'doFindOrCreateUser', input: user, type: 'start' });
 
+  
   if (!user.primaryEmail ) {
     return callback(new Error("INVALID_EMAIL"), null);
   }
