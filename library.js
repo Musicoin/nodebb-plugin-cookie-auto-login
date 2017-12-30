@@ -204,5 +204,5 @@ function doGetUserNameFromData(user){
   }
   //this will get username from email
   var index = user.primaryEmail.indexOf("@");
-  return str.substring(0,index);
+  return user.primaryEmail.substring(0,index);
 }
