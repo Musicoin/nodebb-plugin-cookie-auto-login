@@ -167,7 +167,7 @@ function doFindOrCreateUser(user, callback) {
       return doCreateUser({
         fullname: user.fullname || '',
         email: user.primaryEmail,
-        username: user.fullname || ''
+        username: doGetUserNameFromData(user)
       }, done);
     }
     return done(null, uid);
@@ -195,4 +195,14 @@ function doFindOrCreateUser(user, callback) {
 
 function isAdmin(email) {
   return (email && email.endsWith("@musicoin.org"));
+}
+
+function doGetUserNameFromData(user){
+  //no problem fullname can be username
+  if(user.fullname && user.fullname.trim().length >1){
+    return user.fullname;
+  }
+  //this will get username from email
+  var index = user.primaryEmail.indexOf("@");
+  return user.primaryEmail.substring(0,index);
 }
