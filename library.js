@@ -165,9 +165,9 @@ function doFindOrCreateUser(user, callback) {
 
     if (!uid) {
       return doCreateUser({
-        fullname: user.fullname,
+        fullname: user.fullname || '',
         email: user.primaryEmail,
-        username: user.fullname
+        username: user.fullname || ''
       }, done);
     }
     return done(null, uid);
