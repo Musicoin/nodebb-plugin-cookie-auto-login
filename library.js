@@ -92,7 +92,7 @@ function doGetUserFromRemote(headers, callback) {
 
   pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, type: 'start' });
 
-  request.get('https://staging.musicoin.org/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
+  request.get(appURL+'/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
 
     if (error) {
       let result = JSON.parse(res.text);
