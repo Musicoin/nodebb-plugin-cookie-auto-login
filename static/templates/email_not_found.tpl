@@ -19,7 +19,7 @@
         <div class="text-center">
             <h1>Wellcome to Musicoin Forum </h1>
              <blockquote>
-                <p>Hello username, Looks like you have not provided or verified your email. 
+                <p>Hello {user.fullname || user.primaryEmail}, Looks like you have not provided or verified your email. 
                 Email address is necessary to register in our forum. Please follow the below link to update or verify your email address.</p>
                 <footer>Musicoin Dev. Team</footer>
             </blockquote>

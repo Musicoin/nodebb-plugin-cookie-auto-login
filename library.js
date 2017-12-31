@@ -40,17 +40,20 @@ exports.load = function(params, callback) {
     }
 
     async.waterfall([(done) => {
-      getUserUid(req.headers, done);
-    }, (uid, done) => {
+      getUser(req.headers, done);
+    }, (user, done) => {
       if (req.uid) {
         return done(null, false);
       }
-      doLogin(req, uid, done);
-    }], (error, loggedInNow) => {
+      doLogin(req, user, done);
+    }], (error, user, loggedInNow) => {
+
+      res.session = res.session || {};
 
       if (error) {
 
         if (error.message === 'INVALID_EMAIL') {
+          res.session.temp = user;
           return res.redirect('/email_not_found');
         }
 
@@ -77,8 +80,10 @@ exports.load = function(params, callback) {
   router.use(autoLogin);
 
   router.get('/email_not_found', function(req, res) {
-    res.render('email_not_found', { appURL: appURL });
+    res.render('email_not_found', { user: req.session.temp, appURL: appURL });
+    delete req.session.temp;
   });
+
   callback();
 }
 
@@ -102,9 +107,9 @@ function doGetUserFromRemote(headers, callback) {
 
 }
 
-function getUserUid(headers, callback) {
+function getUser(headers, callback) {
 
-  pino.info({ method: 'getUserUid', input: headers.cookie, type: 'start' });
+  pino.info({ method: 'getUser', input: headers.cookie, type: 'start' });
 
   async.waterfall([function getUserFromRemote(done) {
     doGetUserFromRemote(headers, done);
@@ -113,13 +118,13 @@ function getUserUid(headers, callback) {
       return done(new Error('Invalid Session'));
     }
     doFindOrCreateUser(user, done);
-  }], (error, uid) => {
+  }], (error, user) => {
     if (error) {
-      pino.error({ method: 'getUserUid', input: headers.cookie, error: error.toString(), type: 'end' });
+      pino.error({ method: 'getUser', input: headers.cookie, error: error.toString(), type: 'end' });
       return callback(error);
     }
-    pino.info({ method: 'getUserUid', input: headers.cookie, output: uid, type: 'end' });
-    callback(null, uid);
+    pino.info({ method: 'getUser', input: headers.cookie, output: user, type: 'end' });
+    callback(null, user);
   });
 
 }
@@ -180,30 +185,33 @@ function doFindOrCreateUser(user, callback) {
       return callback(error);
     }
 
-    pino.info({ method: 'doFindOrCreateUser', input: user, output: uid, type: 'end' });
-    callback(null, uid);
+    user.uid = uid;
+
+    pino.info({ method: 'doFindOrCreateUser', input: user, output: user, type: 'end' });
+
+    callback(null, user);
 
   });
 
 }
 
-function doLogin(req, uid, callback) {
+function doLogin(req, user, callback) {
 
-  pino.info({ method: 'doLogin', input: uid, type: 'start' });
+  pino.info({ method: 'doLogin', input: user, type: 'start' });
 
-  authenticationController.doLogin(req, uid, (error) => {
+  authenticationController.doLogin(req, user.uid, (error) => {
 
     if (error) {
 
-      pino.error({ method: 'doLogin', input: uid, error: error.toString(), type: 'end' });
+      pino.error({ method: 'doLogin', input: user, error: error.toString(), type: 'end' });
       return callback(error);
 
     }
 
     let loggedInNow = true;
 
-    pino.info({ method: 'doLogin', input: uid, output: {}, type: 'end' });
-    callback(null, loggedInNow);
+    pino.info({ method: 'doLogin', input: user, output: {}, type: 'end' });
+    callback(null, user, loggedInNow);
 
   });
 }
