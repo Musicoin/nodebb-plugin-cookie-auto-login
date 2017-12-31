@@ -53,7 +53,6 @@ exports.load = function(params, callback) {
       if (error) {
 
         if (error.message === 'INVALID_EMAIL') {
-          res.session.temp = user;
           return res.redirect('/email_not_found');
         }
 
@@ -80,27 +79,37 @@ exports.load = function(params, callback) {
   router.use(autoLogin);
 
   router.get('/email_not_found', function(req, res) {
-    res.render('email_not_found', { fullname: req.session.temp.fullname || req.session.temp.username, appURL: appURL });
-    delete req.session.temp;
+    
+    getSessionUser(req.headers, (error, user) => {
+
+      if (error) {
+        // user not found. Redirect to home page. 
+        return res.redirect('/');
+      }
+
+      res.render('email_not_found', { fullname: user.fullname, appURL: appURL });
+
+    });
+
   });
 
   callback();
 }
 
-function doGetUserFromRemote(headers, callback) {
+function getSessionUser(headers, callback) {
 
-  pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, type: 'start' });
+  pino.info({ method: 'getSessionUser', input: headers.cookie, type: 'start' });
 
   request.get(appURL + '/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
 
     if (error) {
       let result = JSON.parse(res.text);
-      pino.error({ method: 'doGetUserFromRemote', input: headers.cookie, error: result, type: 'end' });
+      pino.error({ method: 'getSessionUser', input: headers.cookie, error: result, type: 'end' });
       return callback(result);
     }
 
     let result = JSON.parse(res.text);
-    pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, output: result, type: 'end' });
+    pino.info({ method: 'getSessionUser', input: headers.cookie, output: result, type: 'end' });
     callback(null, result);
 
   });
@@ -112,7 +121,7 @@ function getUser(headers, callback) {
   pino.info({ method: 'getUser', input: headers.cookie, type: 'start' });
 
   async.waterfall([function getUserFromRemote(done) {
-    doGetUserFromRemote(headers, done);
+    getSessionUser(headers, done);
   }, function findInLocal(user, done) {
     if (!user) {
       return done(new Error('Invalid Session'));
