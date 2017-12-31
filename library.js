@@ -80,7 +80,7 @@ exports.load = function(params, callback) {
   router.use(autoLogin);
 
   router.get('/email_not_found', function(req, res) {
-    res.render('email_not_found', { user: req.session.temp, appURL: appURL });
+    res.render('email_not_found', { fullname: req.session.temp.fullname || req.session.temp.username, appURL: appURL });
     delete req.session.temp;
   });
 
