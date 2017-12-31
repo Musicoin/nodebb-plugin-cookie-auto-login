@@ -30,6 +30,7 @@ exports.extendConfig = function extendConfig(config, callback) {
 };
 
 exports.load = function(params, callback) {
+
   let router = params.router;
 
   function autoLogin(req, res, next) {
@@ -38,43 +39,36 @@ exports.load = function(params, callback) {
       return next();
     }
 
-    getUserUid(req.headers, function(error, uid) {
+    async.waterfall([(done) => {
+      getUserUid(req.headers, done);
+    }, (uid, done) => {
+      if (req.uid) {
+        return done(null, false);
+      }
+      doLogin(uid, done);
+    }], (error, loggedInNow) => {
 
-      // error meaning, session not found
       if (error) {
+        
         if (error.message === 'INVALID_EMAIL') {
           return res.redirect('/email_not_found');
-        } else {
-          //req.uid exists meaning, musicoin session is invalidated and forum session not
-          if (req.uid) {
-            // invalidate forum session too
-            req.logout();
-            // return res.redirect('/');
-          }
-          return next();
         }
-      }
 
-      // if musicoin session found & forum session also found
-      if (req.uid) {
-        // skip logging again
+        //req.uid exists meaning, musicoin session is invalidated and forum session not
+        if (req.uid) {
+          // invalidate forum session too
+          req.logout();
+        }
+
         return next();
+
       }
 
-      //this will cover some errors
-      if (!req.session) {
-        req.session = {};
+      if (loggedInNow) {
+        return res.redirect('/'); // Redirect first time to refresh session. 
       }
 
-      authenticationController.doLogin(req, uid, (error) => {
-
-        if (error) {
-          return next(error);
-        }
-
-        res.redirect('/'); // Redirect first time to refresh session. 
-
-      });
+      return next();
 
     });
 
@@ -83,7 +77,7 @@ exports.load = function(params, callback) {
   router.use(autoLogin);
 
   router.get('/email_not_found', function(req, res) {
-    res.render('email_not_found', { appURL: appURL});
+    res.render('email_not_found', { appURL: appURL });
   });
   callback();
 }
@@ -92,7 +86,7 @@ function doGetUserFromRemote(headers, callback) {
 
   pino.info({ method: 'doGetUserFromRemote', input: headers.cookie, type: 'start' });
 
-  request.get(appURL+'/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
+  request.get(appURL + '/json-api/profile/me').set('Cookie', (headers.cookie || '')).end((error, res) => {
 
     if (error) {
       let result = JSON.parse(res.text);
@@ -193,16 +187,37 @@ function doFindOrCreateUser(user, callback) {
 
 }
 
+function doLogin(uid, callback) {
+
+  pino.info({ method: 'doLogin', input: uid, type: 'start' });
+
+  authenticationController.doLogin(req, uid, (error) => {
+
+    if (error) {
+
+      pino.error({ method: 'doLogin', input: uid, error: error.toString(), type: 'end' });
+      return callback(error);
+
+    }
+
+    let loggedInNow = true;
+
+    pino.info({ method: 'doLogin', input: uid, output: {}, type: 'end' });
+    callback(null, loggedInNow);
+
+  });
+}
+
 function isAdmin(email) {
   return (email && email.endsWith("@musicoin.org"));
 }
 
-function doGetUserNameFromData(user){
+function doGetUserNameFromData(user) {
   //no problem fullname can be username
-  if(user.fullname && user.fullname.trim().length >1){
+  if (user.fullname && user.fullname.trim().length > 1) {
     return user.fullname;
   }
   //this will get username from email
   var index = user.primaryEmail.indexOf("@");
-  return user.primaryEmail.substring(0,index);
+  return user.primaryEmail.substring(0, index);
 }
