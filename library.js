@@ -45,11 +45,11 @@ exports.load = function(params, callback) {
       if (req.uid) {
         return done(null, false);
       }
-      doLogin(uid, done);
+      doLogin(req, uid, done);
     }], (error, loggedInNow) => {
 
       if (error) {
-        
+
         if (error.message === 'INVALID_EMAIL') {
           return res.redirect('/email_not_found');
         }
@@ -187,7 +187,7 @@ function doFindOrCreateUser(user, callback) {
 
 }
 
-function doLogin(uid, callback) {
+function doLogin(req, uid, callback) {
 
   pino.info({ method: 'doLogin', input: uid, type: 'start' });
 
