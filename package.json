@@ -24,6 +24,7 @@
   "readme": "",
   "readmeFilename": "README.md",
   "dependencies": {
+    "async": "^2.6.0",
     "passport-cookie": "^1.0.4",
     "passport-oauth": "~1.0.0",
     "pino": "^4.10.2",
@@ -33,5 +34,11 @@
   "nbbpm": {
     "compatibility": "^1.0.1",
     "index": false
+  },
+  "devDependencies": {
+    "eslint": "^4.14.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1"
   }
 }

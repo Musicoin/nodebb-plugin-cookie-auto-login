@@ -12,6 +12,10 @@
     {
       "hook": "filter:config.get",
       "method": "extendConfig"
+    },
+    {
+      "hook": "filter:hotswap.prepare",
+      "method": "overrideLoginController"
     }
   ],
   "staticDirs": {
