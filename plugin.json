@@ -16,10 +16,6 @@
     {
       "hook": "filter:hotswap.prepare",
       "method": "overrideLoginController"
-    },
-    {
-      "hook": "filter:user.updateProfile",
-      "method": "updateProfileHook"
     }
   ],
   "staticDirs": {

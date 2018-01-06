@@ -21,14 +21,6 @@ exports.overrideLoginController = function overrideLoginController(params, callb
 
 };
 
-exports.updateProfileHook = function updateProfileHook(params, callback) {
-  
-  console.log(JSON.stringify(params, null, 2));
-
-  callback();
-
-};
-
 exports.extendConfig = function extendConfig(config, callback) {
 
   require('./lib/extend-config')(config, callback);
