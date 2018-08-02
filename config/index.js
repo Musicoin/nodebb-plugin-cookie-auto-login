@@ -1,5 +1,5 @@
 
-const appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://staging.musicoin.org';
+const appURL = process.env.NODE_ENV === 'development' ? 'https://staging.musicoin.org' : 'https://www.musicoin.org';
 const forumURL = process.env.NODE_ENV === 'development' ? 'https://forum.musicoin.org' : 'https://forum.musicoin.org';
 
 module.exports = {
